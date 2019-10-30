@@ -15,7 +15,7 @@ public:
 		renderDirty = 3;
 	}
 
-	bool Display = true;
+	bool Display = false;
 	bool Draw()
 	{
 		if (!Display) return false;

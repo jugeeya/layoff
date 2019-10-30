@@ -63,6 +63,27 @@ void __appInit(void) {
 	if (R_FAILED(rc))
 		fatalSimple(MAKERESULT(Module_Libnx, LibnxError_InitFail_FS));
 
+	// need this to get pId
+    rc = pmdmntInitialize();
+    if (R_FAILED(rc)) {
+        fatalSimple(rc);
+    }
+
+    // need this to get applicationid
+    rc = pminfoInitialize();
+    if (R_FAILED(rc))
+        fatalSimple(rc);
+
+    // setting hos version because apparently it changes some functions
+    rc = setsysInitialize();
+    if (R_SUCCEEDED(rc)) {
+        SetSysFirmwareVersion fw;
+        rc = setsysGetFirmwareVersion(&fw);
+        if (R_SUCCEEDED(rc))
+            hosversionSet(MAKEHOSVERSION(fw.major, fw.minor, fw.micro));
+        setsysExit();
+    }
+
 	fsdevMountSdmc();
 }
 
@@ -74,6 +95,7 @@ void __appExit(void) {
 	psmExit();
 	hidExit();
 	smExit();
+	pmdmntExit();
 }
 
 void __libnx_initheap(void) {
@@ -144,8 +166,7 @@ bool OverlayAppletMainLoop(void) {
     u32 msg = 0;
     if (R_FAILED(appletGetMessage(&msg))) return true;
 	
-	if (console)
-		console->Print("Received message: " + to_string(msg) + "\n");
+	if (console) console->Print("Received message: " + to_string(msg) + "\n");
 	
 	if (msg == 0x17)
 		PowerPressed = true;
@@ -233,8 +254,10 @@ void StatusDisplay()
 }*/
 #include "demo/Calc.hpp"
 #include "demo/CheatScreen.hpp"
+#include "demo/TrainingModpackMenu.hpp"
 DemoCalc *demoCalc = nullptr;
 CheatScreen *cheatScreen = nullptr;
+TrainingMenu *trainingMenu = nullptr;
 
 void LayoffMainWindow() 
 {
@@ -243,7 +266,7 @@ void LayoffMainWindow()
 	ImGui::SetWindowSize(ImVec2(512, 720));
 	//StatusDisplay();
 	ImGui::Checkbox("Show screenConsole", &console->Display);
-	if (ImGui::CollapsingHeader("Demos"))
+	/*if (ImGui::CollapsingHeader("Demos"))
 	{
 		if (ImGui::Button("Calc", ImVec2(511, 0)))
 		{
@@ -254,7 +277,17 @@ void LayoffMainWindow()
 		{
 			if (!cheatScreen)
 				cheatScreen = new CheatScreen();
+		}
+		if (ImGui::Button("Training Menu", ImVec2(511, 0)))
+		{
+			if (!trainingMenu)
+				trainingMenu = new TrainingMenu();
 		}		
+	}*/
+	if (ImGui::CollapsingHeader("Training Modpack Menu", ImGuiTreeNodeFlags_DefaultOpen)) 
+	{
+		if (!trainingMenu) trainingMenu = new TrainingMenu();
+		trainingMenu->DrawMain();
 	}
 	ImGui::Spacing();
 	if (ImGui::CollapsingHeader("System", ImGuiTreeNodeFlags_DefaultOpen))
@@ -273,7 +306,7 @@ void LayoffMainWindow()
 			nifmIsWirelessCommunicationEnabled(&IsWirelessEnabled);
 		}
 		ImGui::Spacing();
-		ImGui::Text("Ip address: %s",CurIpAddress);
+		ImGui::Text("IP address: %s",CurIpAddress);
 		ImGui::Spacing();
 		ImGui::Spacing();
 		if (ImGui::Checkbox("Auto brightness", &IsAutoBrightnessEnabled))
@@ -401,6 +434,7 @@ bool LayoffMainLoop(ImGuiIO& io)
 		bool DrewSomething = false; //Switch to active mode if the user closed all the widgets		
 		DrewSomething |= WidgetDraw((UiItem**)&demoCalc);
 		DrewSomething |= WidgetDraw((UiItem**)&cheatScreen);
+		//DrewSomething |= WidgetDraw((UiItem**)&trainingMenu);
 
 		if(renderDirty > 0) ImGui::Render();
 		//SDL_RenderPresent(sdl_render);
@@ -435,7 +469,6 @@ int main(int argc, char* argv[])
 	lblInitialize();
 
 	ovlnInitialize();
-	
 	console = new ScreenConsole();
 	ntm = new NotificationManager(console);
 
@@ -468,5 +501,7 @@ QUIT: //does the overlay applet ever close ?
 	gfx->Exit();
 	__nx_win_exit();
 	ovlnExit();
+	pmdmntExit();
+	pminfoExit();
 	return 0;
 }
