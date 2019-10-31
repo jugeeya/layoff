@@ -265,7 +265,7 @@ void LayoffMainWindow()
 	ImGui::SetWindowPos(ImVec2(1280 - 512, 0));
 	ImGui::SetWindowSize(ImVec2(512, 720));
 	//StatusDisplay();
-	ImGui::Checkbox("Show screenConsole", &console->Display);
+	//ImGui::Checkbox("Show screenConsole", &console->Display);
 	/*if (ImGui::CollapsingHeader("Demos"))
 	{
 		if (ImGui::Button("Calc", ImVec2(511, 0)))

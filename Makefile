@@ -8,10 +8,7 @@ endif
 
 TOPDIR ?= $(CURDIR)
 include $(DEVKITPRO)/libnx/switch_rules
-include $(TOPDIR)/localconfig.mk
-ifeq ($(LNXNIGHTLY),)
-$(error Please set LNXNIGHTLY to your libnx repository 'nx' folder in the localconfig.mk file (LNXNIGHTLY := <repo path>/nx/))
-endif
+LNXNIGHTLY := $(CURDIR)/libnx/nx
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed

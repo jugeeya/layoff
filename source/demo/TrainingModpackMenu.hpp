@@ -55,6 +55,8 @@ public:
                     PushItemWidth(GetWindowWidth() * 0.5f);
                     Combo("Tech Options", &menu.TECH_STATE, tech_items, IM_ARRAYSIZE(tech_items));
                     PushItemWidth(GetWindowWidth() * 0.5f);
+                    Combo("Defensive Options", &menu.DEFENSIVE_STATE, defensive_items, IM_ARRAYSIZE(defensive_items));
+                    PushItemWidth(GetWindowWidth() * 0.5f);
                     Combo("Shield Options", &menu.SHIELD_STATE, shield_items, IM_ARRAYSIZE(shield_items));
                     PushItemWidth(GetWindowWidth() * 0.5f);
                     Combo("Set DI", &menu.DI_STATE, di_items, IM_ARRAYSIZE(di_items));
@@ -65,8 +67,10 @@ public:
                     SetNextWindowPos(ImVec2(0,0));
                     if (BeginPopupModal("Help", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
                         Text(HelpTexts[HelpTxtIndex]);
+                        Spacing();
                         if (Button("Next"))
                             HelpTxtIndex = (HelpTxtIndex + 1) % IM_ARRAYSIZE(HelpTexts);
+                        Spacing();
                         if (Button("Close"))
                             CloseCurrentPopup();
                         EndPopup();
@@ -104,7 +108,7 @@ private:
     std::string Log;
 
     size_t HelpTxtIndex = 0;
-    const char* HelpTexts[6] = { R""""(Hitbox Visualization
+    const char* HelpTexts[7] = { R""""(Hitbox Visualization
 
 Currently, hitboxes and grabboxes are supported.)"""",
     R""""(Mash Toggles
@@ -132,13 +136,20 @@ The grounded options include:
 CPUs will perform a random tech option. 
 Specific tech options can be chosen and include:
     In place, roll, and miss tech
-CPUs will also perform a random defensive option after getting up.)"""",
+CPUs will also perform a defensive option after getting up.)"""",
     R""""(Ledge Options
 
 CPUs will perform a ledge option. 
 Specific ledge options can be chosen and include:
     Normal, roll, jump, and attack
-CPUs will also perform a random defensive option after getting up.
+CPUs will also perform a defensive option after getting up.
+)"""",
+    R""""(Defensive Options
+
+Choose the defensive option a CPU will perform after teching or
+getting up from the ledge. 
+Specific options include:
+    Flash shield, spotdodge, and jab
 )"""",
     R""""(Shield Options
 
