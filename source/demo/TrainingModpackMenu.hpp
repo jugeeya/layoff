@@ -3,8 +3,7 @@
 #include <math.h>
 #include "../UI/UI.hpp"
 
-#include "../taunt_toggles.h"
-#define MULTILINE(...) #__VA_ARGS__
+#include "../../../source/taunt_toggles.h"
 
 using namespace ImGui;
 
@@ -14,29 +13,31 @@ public:
     void DrawMain()
     {
         char buffer[100];
-        TrainingModpackMenu* menu_addr = 0;
         Log = "\nLog\n";
 
-        FILE* f = fopen("sdmc:/SaltySD/training_modpack.log", "r");
-        if (f) {
-            int read_bytes = fread(buffer, 1, 100, f);
-            fclose(f);
-            buffer[read_bytes] = '\0';
-            menu_addr = (TrainingModpackMenu*) strtoul(buffer, NULL, 16);
-        } else Log += "Failed to open log file.\n";
+        Result rc;
+        Handle debug;
 
-        if (menu_addr) {
-            Result rc;
-            Handle debug;
+        u64 title;
+        u64 pid;
+        pmdmntGetApplicationPid(&pid);
+        pminfoGetTitleId(&title, pid);
 
-            u64 title;
-            u64 pid;
-            pmdmntGetApplicationPid(&pid);
-            pminfoGetTitleId(&title, pid);
+        if (title == 0x01006A800016E000) {
+            rc = svcDebugActiveProcess(&debug, pid);
+            if (R_SUCCEEDED(rc)) {
+                if (menu_addr == 0) {
+                   FILE* f = fopen("sdmc:/SaltySD/training_modpack.log", "r");
+                    if (f) {
+                        int read_bytes = fread(buffer, 1, 100, f);
+                        fclose(f);
+                        buffer[read_bytes] = '\0';
+                        menu_addr = (TrainingModpackMenu*) strtoul(buffer, NULL, 16);
+                    } else Log += "Failed to open log file.\n";
+                }
 
-            if (title == 0x01006A800016E000) {
-                rc = svcDebugActiveProcess(&debug, pid);
-                if (R_SUCCEEDED(rc)) {
+                if (menu_addr == 0) Log += "Struct address is null.\n";
+                else {
                     rc = svcReadDebugProcessMemory(&menu, debug, (u64)menu_addr, sizeof(menu));
                     if (R_SUCCEEDED(rc)) {
                         if (menu.print_buffer_len > 0)
@@ -61,9 +62,8 @@ public:
                     PushItemWidth(GetWindowWidth() * 0.5f);
                     Combo("Set DI", &menu.DI_STATE, di_items, IM_ARRAYSIZE(di_items));
 
-                    if (Button("Help")) {
+                    if (Button("Help"))
                         OpenPopup("Help");
-                    }
                     SetNextWindowPos(ImVec2(0,0));
                     if (BeginPopupModal("Help", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
                         Text(HelpTexts[HelpTxtIndex]);
@@ -80,9 +80,9 @@ public:
                     if (R_FAILED(rc)) Log += "Failed to write process memory.\n";
 
                     svcCloseHandle(debug);
-                } else Log += "Failed to debug process.\n";
-            } else Log += "Application is not Smash.\n";
-        } else Log += "Struct address is null.\n";
+                }
+            } else { Log += "Failed to debug process.\n"; menu_addr = 0; }
+        } else { Log += "Application is not Smash.\n"; menu_addr = 0; }
 
         // Text(Log.c_str());
     }
@@ -106,6 +106,7 @@ public:
 private:
 	bool Running = true;
     std::string Log;
+    TrainingModpackMenu* menu_addr = 0;
 
     size_t HelpTxtIndex = 0;
     const char* HelpTexts[7] = { R""""(Hitbox Visualization
