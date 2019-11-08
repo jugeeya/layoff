@@ -1,0 +1,2 @@
+svc.o: \
+ /mnt/c/Users/Jugeeya/Documents/Games/SwitchHacking/UltimateModding/UltimateTrainingModpack/layoff/libnx/nx/source/kernel/svc.s
