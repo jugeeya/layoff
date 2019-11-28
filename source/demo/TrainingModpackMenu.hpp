@@ -123,6 +123,11 @@ CPUs will mash jump on the first frame out of hitstun.
 
 Attack
 CPUs will mash an attack on the first frame out of hitstun and when landing.
+CPUs will also mash an option on the first frame out of shieldstun: use this
+toggle along with the Shield Options toggle to practice moves on shield.
+
+Spotdodge
+CPUs will mash spotdodge on the first frame out of hitstun, shieldstun, and when landing.
 
 Random
 CPUs will mash an aerial or grounded option on the first frame out of hitstun and when landing. 
@@ -153,6 +158,9 @@ Specific options include:
     Flash shield, spotdodge, and jab
 )"""",
     R""""(Shield Options
+
+Use these toggles in conjunction with Mash Attack/Spotdodge/Random to 
+practice moves on shield.
 
 Infinite
 CPUs will hold a shield that does not deteriorate over time or by damage.
